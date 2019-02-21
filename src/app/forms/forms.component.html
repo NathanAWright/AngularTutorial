@@ -1,0 +1,51 @@
+<h1>Forms</h1>
+<nav>
+  <button (click)="navigateToTdf()">Template Driven Form</button>
+  <button (click)="navigateToReactive()">Reactive Form</button>
+</nav>
+<router-outlet></router-outlet>
+<h2>Template Driven Forms</h2>
+<p>
+  In this model form, a lot of the code logic resides in the html. 
+  This approach relies heavily on two-way data binding. The ngForm directive along with the ngModel 
+  directive allows Angular to keep track of the form state.
+</p>
+<p>The template driven form cannot be unit tested and therefore the only way to test it is to run an 
+  end-to-end test with a browser. This form type is recommended for more simple forms which do not 
+  require heavy amounts of validation.
+</p>
+<hr>
+<h2>Reactive Forms</h2>
+<p>The opposite of Template Driven Forms lol.</p>
+<ul>
+  <li>
+    Code and logic resides in the component class
+  </li>
+  <li>
+    No two-way binding
+  </li>
+  <li>
+    Well suited for complex scenarios
+  </li>
+  <li>
+    Dynamic form fields
+  </li>
+  <li>
+    Custom validation
+  </li>
+  <li>
+    Dynamic validation
+  </li>
+  <li>
+    Unit test
+  </li>
+</ul>
+<hr>
+<p>Bootstrap is a variety of classes that can be used to make our html look better, here's how we include it.</p>
+<ol>
+  <li>Go to <a href="https://getbootstrap.com/docs/4.0/getting-started/introduction/" target="_blank">Bootstrap.com</a></li>
+  <li>Copy-paste the stylesheet &lt;link&gt; into your &lt;head&gt; before all other stylesheets to load the CSS. (in the index.html file)</li>
+  <li>That's it! Check out the Bootstrap styled button below.</li>
+</ol>
+<button class="btn btn-primary">Submit</button> 
+<p>The button was styled by adding classes in line, these classes were defined by Bootstrap.</p>

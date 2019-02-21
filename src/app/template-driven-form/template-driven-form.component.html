@@ -1,0 +1,182 @@
+<div class="container-fluid">
+  <h1>Example TD Form</h1>
+  <div class = "alert alert-danger" *ngIf = "errorMsg">
+    {{errorMsg}}
+  </div>
+  <form *ngIf="!submitted" #userForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
+    {{userForm.value|json}} //interpolation (passing the form's reference variable.value through a json pipe)
+    <hr />
+    {{userModel | json}}
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" required #name="ngModel" [class.is-invalid]="name.invalid && name.touched" class="form-control is-invalid" [(ngModel)]="userModel.name" name="userName">
+      <small class="text-danger" [class.d-none]="name.valid || name.untouched">Name is required.</small>
+    </div>//every input needs to have the ngModel directive for data to be captured in real time
+    <!-- {{name.valid}} -->
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" class="form-control" [(ngModel)]="userModel.email" name="email">// in order to use ngModel the name attribute must be set
+    </div>
+
+    <div class="form-group">
+        <label>Phone</label>
+        <input required type="tel" class="form-control" #phone="ngModel" pattern="^\d{10}$" [class.is-invalid]="phone.invalid && phone.touched" [(ngModel)]="userModel.phone" name="phone">
+        <!-- <small class="text-danger" [class.d-none]="phone.valid || phone.untouched">Phone number must be 10 digits.</small> -->
+
+        <div *ngIf="phone.errors && (phone.invalid || phone.touched)">
+            <small class="text-danger" *ngIf="phone.errors.required">Phone number is required.</small>
+            <small class="text-danger" *ngIf="phone.errors.pattern">Phone number must be 10 digits.</small>
+        </div>
+    </div>
+    
+    <div class="form-group">
+      <select (blur)="validateTopic(topic.value)" (change)="validateTopic(topic.value)" class="custom-select" #topic="ngModel" [class.is-invalid]="topicHasError && topic.touched" [(ngModel)]="userModel.topic" name="topic">
+        <option value="default">I am interested in</option>
+        <option *ngFor="let topic of topics">{{topic}}</option>
+      </select>
+      <small class="text-danger" [class.d-none]="!topicHasError || topic.untouched">Please choose a topic.</small>
+    </div>//ngModel is in the select tag in this instance
+    
+    <div class="mb-3">
+        <label>Time Preference</label>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="timePreference" value="morning" [(ngModel)]="userModel.timePreference">
+          <label>Morning (9AM - 12PM)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="timePreference" value="evening" [(ngModel)]="userModel.timePreference">
+          <label>Evening (5AM - 8PM)</label>
+        </div>
+    </div>
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" [(ngModel)]="userModel.subscribe" name="subscribe">
+      <label class="form-check-label">Send me promotional offers</label>
+    </div>
+      
+    <button [disabled]="userForm.form.invalid || topicHasError" class="btn btn-primary">Submit</button> 
+  </form>
+  <br>
+  <p>NB. The "ngModelGroup" directive would be used when some inputs need to be grouped together. 
+    <br>Eg. different parts of an address.
+    <br>When it comes to data binding, we have three directives: <b>"ngForm", "ngModel"</b> and <b>"ngModelGroup"</b>.
+    <br>At this point it is possible to send the form data to the server by simply using the reference variable name,
+     userForm.value; a better approach however is to send the data to a user defined class first.
+  </p>
+  <p>
+    To set default values we used property binding on ngModel (ie. [ngModel]="userModel.someValue").
+    <br>However, we would also like the class value to change when the changes are made by the user so we use the 
+    two-way binding syntax: [(ngModel)]="userModel.someValue".
+  </p>
+  <h3>Useful Angular Classes</h3>
+  <p>Angular provides support by applying classes to forms automatically, these classes are shown below:
+  </p>
+  <ul>
+    <li>ng-touched vs ng-untouched (touched if a field is visited [and left])</li>
+    <li>ng-dirty vs ng-pristine (ng-dirty if the field is editted)</li>
+    <li>ng-valid vs ng-invalid (ng-invalid if there is no data in the field)</li>
+  </ul>
+  <p>These classes can be viewed by applying a reference variable name to any input field then using interpolation and calling <b>.className</b> 
+    on the variable name.
+  </p>
+
+  <p><br>Useful properties have also been applied to the fields:</p>  
+  <h3>Useful Angular Properties</h3>
+  <ul>
+    <li>untouched</li>
+    <li>pristine</li>
+    <li>valid</li>
+  </ul>
+  <p>These all return true or false values when applied. We have applied validation with visual feedback using a 
+    combination of these properties. Here's how:
+    <code>
+        required #name="ngModel" [class.is-invalid]="name.invalid && name.touched" //"name" is the reference variable to ngModel
+        <br>//"required" since the field is madatory.
+        <br> #phone="ngModel" pattern="^\d&#123;10&#125;$" [class.is-invalid]="phone.invalid && phone.touched" //this code makes sure that the phone number field has exactly 10 digits
+    </code>
+  </p>
+  <h3>Including Error messages</h3>
+  <p>Here is the syntax used for the username error message:</p>
+  <code>
+      &lt;small class="text-danger" [class.d-none]="name.valid || name.untouched"&gt;Name is required.&lt;/small&gt;
+  </code>
+  <p>And here is the error message code for the phone number:
+    <code>
+        &lt;small class="text-danger" [class.d-none]="phone.valid || phone.untouched"&gt;Phone number must be 10 digits.&lt;/small&gt;
+    </code>
+  </p>
+  <br>Of course to deal with multiple possible errors we can simply add the required field and change the message to say 
+  "Phone number is required and must be 10 digits." as a simple solution.
+  <br>However if we want to go the extra mile we can use the "errors" property from ngModel:
+  <br><code>
+    &lt;div *ngIf="phone.errors && (phone.invalid || phone.touched)"&gt;
+        <br>&lt;small class="text-danger" *ngIf="phone.errors.required"&gt;Phone number is required.&lt;/small&gt;
+        <br>&lt;small class="text-danger" *ngIf="phone.errors.pattern"&gt;Phone number must be 10 digits.&lt;/small&gt;
+    <br>&lt;/div&gt;
+  </code><br>
+  <p>Similarly we can display an error message for the drop down box by adding the "required" field amongst other items inline followed by this:</p>
+  <code>
+      &lt;small class="text-danger" [class.d-none]="topic.valid || topic.untouched"&gt;Please choose a topic.&lt;/small&gt;
+  </code>
+  <br>
+  <p>This may not necessarily work if the data comes from an API, this is because the selected/default value may not be an empty string, but it would 
+    be "default" this would break the functionality, causing errors. To fix this, we use a flag variable.
+    <code>
+      <br>&lt;<b>select (blur)="validateTopic(topic.value)" (change)="validateTopic(topic.value)"</b> class="custom-select" #topic="ngModel" [class.is-invalid]=" <b>topicHasError</b>  && topic.touched" [(ngModel)]="userModel.topic" name="topic"&gt;
+        <br>&lt;option value="default"&gt;I am interested in&lt;/option&gt;
+        <br>&lt;option *ngFor="let topic of topics"&gt;{{topic}}&lt;/option&gt;
+      <br>&lt;/select&gt;
+      <br>&lt;small class="text-danger" [class.d-none]=" <b>!topicHasError</b>  || topic.untouched"&gt;Please choose a topic.&lt;/small&gt;
+      <br>//"topicHasError" is the variable that is toggled when there is a "blur" or "change" in the boxes value (similar to (click)="someFunction()").
+      <br>//"topic" is the reference variable for ngModel therefore topic.value would be the value selected in the drop down box
+    </code><br>
+  </p>
+  <p>Here's how we did the overall form validation which would disable/enable the submit button:</p>
+  <code>
+      &lt;button [disabled]="userForm.form.invalid || topicHasError" class="btn btn-primary"&gt;Submit&lt;/button&gt;
+  </code>
+  <h3>Saving Form Data to a Server</h3>
+  <p>In order to save the form data we needed to <b>add <code>(ngSubmit)="onSubmit()"</code> </b>in the outer 
+    form tag so that action would be taken using the data entered.
+    <br>We also need a <b>service</b>; we called this service "enrollment".
+    <br>Here's "onSubmit()":
+    <code>
+      <br>onSubmit()&#123;
+        <br>this._enrollmentService.enroll(this.userModel)
+          <br>.subscribe(
+            <br>data => console.log('Success!', data),
+            <br>error => console.error('Error', error)
+          <br>)
+      <br>&#123;
+    </code> 
+    and here's the main code from the enrollmentService so far:
+    <code>
+      <br>enroll(user: User)&#123;
+      <br>return this._http.post&lt;any&gt;(this._url, user)
+        <br>&#125;//returns the response as an observable
+    </code>
+    <br>
+    At this point a folder, "Server", was made to hold all of the code related to the server, 
+    have a look at the files or this video to see how the data is received from the Angular 
+    application.
+  </p>
+  <iframe width="560" height="315"  src="https://www.youtube.com/embed/jwA-9XXybdM" frameborder="0" allowfullscreen></iframe>
+  <h3>Server/ Submission Error Handling</h3>
+  <p>
+    Simply using the <code>pipe()</code> (explained earlier in this course) method in the "EnrollmentService"; catching and 
+    throwing server errors doesn't take a lot of work. The 'errorMsg' is sent to "template-driven-form.ts" where the status 
+    is stored in a string to be displayed (using interpolation) if the string is not null.
+    <br>Here's the code:
+    <code>
+      <br>onSubmit()&#123;
+      <br>this._enrollmentService.enroll(this.userModel)
+      <br>.subscribe(
+        <br>data => console.log('Success!', data),
+        <br>error => this.errorMsg = error.statusText
+        <br>)
+        <br>this.submitted = true;//using *ngIf this hides the form on submission
+        <br>&#125;
+    </code>
+  </p>
+  <hr>
+</div>

@@ -1,0 +1,482 @@
+<h1>
+  You've reached Section 2!
+</h1>
+<div>
+  <h2>
+    Pipes
+  </h2>
+  <p>When using interpolation a pipe ( '|' ) character can be appended with an instruction to modify the way the data is displayed in the view.
+    <br>Here's an example: name | uppercase (in double curly braces of course)
+    <br>Here are the options:
+  </p>
+    <ul>
+      <li>
+        {{"LOWERCase"|lowercase}}
+      </li>
+      <li>
+        {{"uppercase"|uppercase}}
+      </li>
+      <li>
+        {{"title case"|titlecase}}
+      </li>
+      <li>
+        {{"slice"|slice}} //must include a start and end index ("...slice:2:5" for example)
+      </li>
+      <li>
+        {{person|json}} //("...| json" shows the json representation of the object before the pipe)
+      </li>
+    </ul>
+    <p>Pipes may also be applied to numbers with decimals.
+      <br>Here's an example: 1.234 | number:'1.2-3'
+      <br>The first digit represents the minimum amount of integer digits.
+      <br>The second digit is the minumum amount of decimal digits displayed.
+      <br>The third digit is the maximum amount of decimal digits displayed.
+      <br>Here's how it works:
+    </p>
+    <ul>
+      <li>
+        {{5.678 | number:'1.2-3'}}  //number:'1.2-3'
+      </li>
+      <li>
+        {{5.678 | number:'3.4-5'}}  //number:'3.4-5'
+      </li>
+      <li>
+        {{5.678 | number:'3.1-2'}}  //number:'3.1-2'
+      </li>
+    </ul>
+    <p>
+      There is also a percent pipe. This shows the percentage representation of a decimal number.
+      <br>Here's how:
+    </p>
+    <ul>
+      <li>{{0.25 | percent}} //0.25 | percent</li>
+    </ul>
+    <p>Next is the currency pipe.</p>
+    <ul>
+      <li>
+        {{0.25 | currency}} //0.25 | currency
+      </li>
+      <li>
+        {{0.25 | currency: 'GBP'}} //0.25 | currency: 'GBP'
+      </li>
+      <li>
+        {{0.25 | currency: 'GBP':'code'}} //0.25 | currency: 'GBP' : 'code'
+      </li>
+    </ul>
+    <p>
+      Here are some pipes to help with date formatting:
+    </p>
+    <ul>
+      <li>
+        {{date}} //no formatting
+      </li>
+      <li>
+        {{date |date:'short'}} //date |date:'short'
+      </li>
+      <li>
+        {{date |date:'shortDate'}} //date |date:'shortDate'
+      </li>
+      <li>
+        {{date |date:'shortTime'}} //date |date:'shortTime'
+      </li>
+    </ul>
+    <p>NB. there are also 'medium' and 'long'formatting.</p>
+</div>
+<hr>
+<div>
+  <h2>
+    Services
+  </h2>
+  <p>A service is basically a class without a view. It is useful for:</p>
+  <ol>
+    <li>
+      Data sharing between components.
+    </li>
+    <li>
+      Implement Application logic.
+    </li>
+    <li>
+      External interaction. (connecting to a database)
+    </li>
+  </ol>
+  <h3>Dependency Injection</h3>
+  <p>This is a coding pattern in which a class receives it's dependencies from an external source rather than creating them itself.
+    <br>In Angular, the DI framework handles all of the dependencies so that a developer does not need to worry about a product which has multiple layers of dependencies.
+  </p>
+  <h4>Here's how to use a service in Angular:</h4>
+  <ol>
+    <li>Create the service</li>
+    <li>Register the service with Angular's built in injector</li>
+    <li>Declare the service as a dependency in the components that need it.</li>
+  </ol>
+  <p>The location at which the service is registered is important, because that component/ module and its children would have exclusive access to the service.
+    <br>(The app module is safest location.)
+    <br>NB. For the purpose of this demonstration, the service (employeeService) is only implemented and used once by this component (section2.component.ts)
+    <br>Here's the data that was sent from employeeService:
+  </p>
+  <ul *ngFor= "let employee of employees">
+    <li>
+      {{employee.id}} {{employee.name}} {{employee.age}}
+    </li>
+  </ul>
+  <p>Here it is again using the <b>json pipe</b> rather than the *ngFor directive:</p>
+  {{employees |json}}
+  <p>NB. <i>The @Injectable decorator is set in each service in the event that the service has dependencies within itself.
+     In the example above the @Injectable decorator isn't necessary in the code, however if you ever want to inject a service 
+     into another service the @Injectable decorator is a must. In the case of a component, the @Component decorator handles this 
+    situation if a component uses a service.</i></p>
+</div>
+<hr>
+<div>
+  <h2>Observables and HTTP</h2>
+  <p>When connecting to a database/ some server it is necessary to make a GET request, the server returns an observable which 
+    can be used by a service to distribute information to all the subscribed components after it is interpreted.
+    <br>An observable is a sequence of items that arrive asynchronously over time.
+    <br>However with an HTTP call, we receive a single item, not a sequence. (HTTP Response)
+    <br>Here are the steps which summarise the HTTP mechanism:
+  </p>
+  <ol>
+    <li>HTTP Get request from EmpService</li>
+    <li>Receive the observable and cast it into an employee array</li>
+    <li>Subscribe to the observable from the necessary components (those which use the data requested)</li>
+    <li>Assign the employee array to a local variable</li>
+  </ol>
+  <p>Reactive Extensions for Javascript (RxJS) is a library that makes it possible to work with Observables in Angular Applications, it is not related to the React library from Facebook.</p>
+  <h3>Step 1</h3>
+  <p>
+    The HttpClientModule is added to the imports array in the app.module.ts file. This makes the module accessible within the app module.
+    <br>To use HTTP in the required service, declare it in the constructor as a parameter like so: <code>constructor (private http: HttpClient)...</code>//of course HttpClient would need to be imported again as well.
+    <br>In this case the declaration is made in the employee service
+    <br>The getEmployees() method now returns the result of a GET request: this.http.get(); 
+    This method usually takes in a URL as its parameter, however we will use a file named "employees.json" 
+    in a folder we created named "data". So using a private variable the URL (/assets/data/employees.json) is stored and passed to the method.
+    (This may be replaced when we have a working web server.)
+  </p>
+  <h3>Step 2</h3>
+  <p>The get request will return an observable which would need to be converted into a format that represents an array of employees.
+    <br>For this we will create an employee interface (employee.ts) in the app folder.
+    <br>(You may check the file to understand the interface code.)
+    <br>Now since we have an employee type that the observable may be cast into, a type "<code>IEmployee[]</code>" at the get request.
+    <br>The getEmployees method now looks like this:<br>
+    <code>getEmployees(): Observable &lt;IEmployee[]&gt;</code>
+    <br>since it returns an observable array object of type IEmployee.
+    <br>Here's what the new return statement looks like:
+    <br><code>return this.http.get&lt;IEmployee[]&gt;(this._url);</code>
+  </p>
+  <h3>Step 3 & 4</h3>
+  <p>The code of the component which uses the employeeService was modified to look like this:</p>
+  <code>
+      ngOnInit() &#123; 
+      <br>  this._employeeService.getEmployees()//to receive data we must subscribe to the method called
+      <br>  .subscribe(data => this.employees = data,//once subscribed the employee data arrives asynchronously
+      <br>error => this.errorMsg = error);//the error message handler
+       <br> &#125;
+  </code>
+</div>
+<hr>
+<div>
+  <h3>Handling HTTP Exceptions</h3>
+  <p>
+    To handle exceptions on an observable we make use of the catch operator to the service.ts file which makes the get request. (In this case the employee.service.ts file)
+    <br>Now the <code>.catch(...)</code> operator can be implemented. This operator takes in a method as its argument, in this case we used
+    <code>this.errorHandler</code> and we defined it as:
+</p>    
+<div>
+    <code>
+      errorHandler(error: HttpErrorResponse)&#123;
+        <br>return observableThrowError(error.message||"Server Error"); //returns the error message or "server error"
+      <br>&#125;
+    </code>
+  </div>
+  <br>The error message is thrown to the components which have subscribed to the observable.
+  <br>Now we must display the data that is thrown to the components.
+  <br>Here's how we access the data, convert it for use as well as check for errors:
+
+  <code>
+    <br>
+    constructor(private _employeeService: EmployeeService) &#123; &#125;
+
+    <br>ngOnInit() &#123;
+    <br>getEmployees(): Observable&lt;IEmployee[]&gt;&#123;
+    <br>  return this.http.get&lt;IEmployee[]&gt;(this._url) 
+    <br>  .pipe(catchError(this.errorHandler));
+    <br>&#125;
+            error => this.errorMsg = error);
+    <br>&#125;
+  </code>
+  <br>If there is an error, the message would be displayed here "<b> {{errorMsg}} </b>" (using interpolation).
+  <br>Try changing the url in the employee.service.ts file in order to cause an error.
+  <br><b>NB. This is in the employee.service.ts file.</b>
+  <p>At this point the employee list and details above are printed using the http get request and service class combination. The information is requested 
+    from a URL source, converted to the required format, then presented or used as required.</p>
+</div>
+<hr>
+<div>
+  <h2>Routing</h2>
+  <p>To navigate between the views of different components, Angular makes use of Routing.
+    <br>Here are the steps to create a project with Routing:
+  </p>
+  <ol>
+    <li>
+      Generate a project with Routing option. (ng new projectName --routing)*
+    </li>
+    <li>
+      Generate the application's components.
+    </li>
+    <li>
+      Configure the routes.
+    </li>
+    <li>
+      Add buttons and use directives to navigate.
+    </li>
+  </ol>
+  <br><h3>Step 1</h3>
+  *If you want to add routing to an existing application, make the following changes:
+  <ol>
+    <li>
+      Navigate to ./src/index.html and include &lt;base href="/"&gt; within the &lt;head&gt; tag.
+      <br>This is required so that the app knows how to construct the URLs while navigating.
+    </li>
+    <li>
+      Next in the app folder, create a file "app-routing.module.ts"; this contains the routing module for our application.
+      <br>This is where we configure the different routes.
+    </li>
+    <li>
+      In ./src/app/app.module.ts import <code>&#123; AppRoutingModule&#125; from './app-routing.module';</code>
+      <br>Also add it to the import array so that it is part of the application we are using.
+    </li>
+  </ol>
+  <h3>Step 2</h3>
+  <p>To generate the components:</p>
+  <ol>
+    <li>
+      <code>ng g c componentName -it -is</code> ("it" for inline template, "is", for inline style)
+    </li>
+  </ol>
+  <h3>Step 3</h3>
+  <p>To configure the routes:</p>
+  <ol>
+    <li>
+      In the "Routes" array in app-routing.module.ts, add the path to be displayed in the url bar as well as the related component(s) to be displayed like this:
+      <br>
+      <code>
+          &#123;path: 'test', component: TestComponent&#125;, etc...
+      </code>
+    </li>
+  </ol>
+  <p>
+    Now we will have the same import statements in both the app-routing.module.ts file and the app.module.ts file.
+    <br>To do this more efficiently*, we can create an array of all the routing components, export it, then import it into the app.module.
+    <br>To do that, in the app-routing.module.ts file include:
+    <br>
+    <code>
+      export const routingComponents = [TestComponent, Section2Component]
+    </code>
+    <br>Now in the app.module.ts file we can import "routingComponents" instead of the individual components. Naturally, they are also replaced in the declarations array.
+    <br>*This is efficient since we will only ever need to specify a new component for routing in the app-routing.module.
+    <br>NB. The routing tag has been included in the main html file (./app/app-component.html) this is where the routed components are displayed.
+    <br>(ie. <code>&lt;router-outlet&gt;&lt;/router-outlet&gt;</code>)
+  </p>
+  <p>In order to make the different component views accessible without having to type out the URLs we can create buttons/links in the app.component.html file:
+    <br>
+    <code>
+      &lt;nav&gt;
+        <br>&lt;a routerLink="/test" routerLinkActive="active"&gt;Test&lt;/a&gt;
+        <br>&lt;a routerLink="/section2" routerLinkActive&gt;Section2&lt;/a&gt;
+      <br>&lt;/nav&gt;
+    </code>
+    <br>The directive "routerLink" states which link the page would be redirected to, 
+    while the routerLinkActive would state what CSS style(s) would be applied when the link is active.
+  </p>
+</div>
+<div>
+  <hr>
+  <h2>Wild Card Routing</h2>
+  <p>There are a few routing anomalies that we need to consider once we implement routing into our program.
+    <br>Sometimes the user may add an incorrect extension to the URL, here's how it's dealt with using the "Wild Card Route":
+  </p>
+  <ol>
+    <li>
+      Create a new "Page not found" component and change the template to state "Page Not Found".
+    </li>
+    <li>
+      Add a new object to the <b>bottom</b> of the array:
+      <br><code>&#123;path: "**", component: PageNotFoundComponent&#125;</code>
+      <br>then import the component and add it to the routingComponents array that we made.
+    </li>
+  </ol>
+  <p>Now that we have dealt with the issue of a default view being displayed for an incorrect URL entry, we need make a default route.
+    <br>Here's how we do it:
+    At the <b>top</b> of the routes array, we add a new object:
+    <br><code>
+      &#123;path: '', component:TestComponent&#125;,
+    </code>
+    <br>This is the simple solution, but it isn't the recommended solution.
+    <br>Here is the recommended solution (the second will not work but is given for educational purposes):
+    <br><code>
+      &#123;path: '', redirectTo: '/test', pathMatch: 'full'&#125;,//if the full URL is empty then redirect to the specified location.
+      <br>&#123;path: '', redirectTo: '/test', pathMatch: 'prefix'&#125;,//if the specified path is a prefix then navigate to the given location.
+    </code>
+  </p>
+</div>
+<hr>
+<div>
+  <h2>Route Parameters</h2>
+  <p>Here we will cover how we pass and read route parameters. For this we will create two new 
+    components/ views; one view which would take a department ID and pass it as a parameter as we navigate to 
+    the other view (DepartmentDetail) by clicking it. Head to the department list to begin:</p>
+  <br>
+  <a routerLink="/department-list" routerLinkActive="active">Department-list </a>
+  <p>
+    Here is the critical code for the functionality achieved above:
+    <br>This line was added to the app-routing.module.ts file:
+    <br><code>
+        &#123;path:'department-detail/:id', component: DepartmentDetailComponent&#125; //"id" is a placeholder for the route parameter
+    </code>
+    <br>Here's how we printed the departments in the department-list view:
+    <br><code>
+        *ngFor ="let department of departments" (click)="onSelect(department)"
+    </code>
+    <br>and of course we used interpolation to display the departments (which were stored in an array).
+    <br>After the "Router" import, here's how we set up the navigation using the department id in the url:
+    <code>
+        onSelect(department)&#123;
+        <br>  this.router.navigate(['/department-detail', department.id]) 
+        <br>&#125;
+    </code>
+    <br>The first parameter is the path we want to navigate to, the second is the route parameter.
+  </p>
+  <p>
+    After importing "ActivatedRoute", we create a variable of type "ActivatedRoute" in the constructor and write this code in the onInit() method of the department-detail.ts file.
+    <br><code>
+        let id = parseInt(this.route.snapshot.paramMap.get('id'));
+    </code>
+    <br>We use "id" because this is the name given to the parameter in the URL in the app-routing.module.ts file.
+  </p>
+</div>
+<hr>
+<div>
+  <h2>paramMap Observable</h2>
+  <p>
+    There is a drawback that the Route Parameters section above doesn't handle. 
+    What happens if you would like to head directly to another department page from the current page? 
+    Even if we insert links to move back or forward between the URLs, the view won't change. Here's how we solve this:
+
+    <br>Using an instance of the ActivatedRoute, we call the paramMap method which returns an observable, 
+    therefore to get the data we need to subscribe to it. The argument of the subscribe method is an arrow function, 
+    <br>
+    <code>
+      <br>this.route.paramMap.subscribe((params: ParamMap)=>&#123;
+        <br>let id = parseInt(params.get('id'));//"id" is the parameter in the URL
+        <br>this.departmentId = id;
+      <br>&#125;);
+    </code>
+  </p>
+</div>
+<hr>
+<div>
+  <h2>
+    Optional Route Parameters
+  </h2>
+  <p>The Optional Route Parameter is something that may exist in the URL but will not affect the page being displayed,  however it may be useful to have.
+    <br>Here's how it is done:
+    <br>In the view/component that we are navigating from this code must be included:
+    <br>
+    <code>
+      goToDepartments()&#123;
+        <br>let selectedId = this.departmentId ? this.departmentId : null; //this is a null check
+        <br>this.router.navigate(['/department-list', &#123;id: selectedId&#125;])//this is the link parameters array, it takes the path and an object with key value pairs which are the optional route parameters that we want to send.
+      <br>&#125;
+    </code>
+    <br>Of course a button is necessary to call this function and execute the code inside.
+    <br>Observe the department-list and the department-detail views and their URLs to get a better understanding.
+    <br>
+    <a routerLink="/department-list" routerLinkActive="active">Department-list </a>
+  </p>
+  <p>Here's how we make logical use of the Optional Route Parameter:
+    <br>In the view which we'd like to see the change in modify the onInit method to look like this:
+    <br>
+    <code>
+      ngOnInit() &#123;
+        <br>this.route.paramMap.subscribe((params: ParamMap)=>&#123;
+          <br>let id = parseInt(params.get('id'));//"id" is the parameter in the URL
+          <br>this.selectedId = id;
+        <br>&#125;);
+      <br>&#125;
+    </code>
+    <br>Of course the necessary imports were already made. For our example we simply used 
+    the information to highlight the selected department in the list through the use of CSS and a method which does a comparison. 
+    Take a look at the code here for a better understanding: './app/department-detail/department-detail.component.ts'
+  </p>
+  <p><b>NB.</b> the optional route parameter doesn't need a placeholder while configuring the route.
+    <br>In other words, if we add a random extra optional route string, there would be no issue with the component display.
+    <br>eg. <code>
+      this.router.navigate(['/department-list', &#123;id: selectedId, test: 'testvalue'&#125;]);
+    </code>
+  </p>
+</div>
+<hr>
+ <div>
+   <h2>Relative Navigation vs Absolute Paths</h2>
+   <p>Absolute paths is what we've been using up till this point, they can be identified by the forward slash ('/') that it begins with.
+     <br>Relative paths are useful because there is a small disadvantage when they are not used. If there is a need to change one of the paths in our routing module 
+     then we will need to change all the occurrences where that absolute path was used.
+     <br>Here's the difference, this is <b>absolute routing</b>:
+     <br><code>
+      <br>onSelect(department)&#123;
+        <br>this.router.navigate(['/department-detail', department.id]) <br>//the first parameter is the path we want to navigate to, the second is the route parameter. 
+      <br>&#125;
+     </code>
+     <br>Here is how we  <b>route relatively</b>:
+     <code>
+      <br>onSelect(department)&#123;
+        <br>this.router.navigate([department.id], &#123;relativeTo: this.route&#125;); <br>//the first parameter is the path we want to append to, the second says that the appending would be relative to the current path. 
+      <br>&#125;
+     </code>
+     <br>Here's another example:
+     <br>
+     <code>
+        this.router.navigate(['../', &#123;id: selectedId&#125;], &#123;relativeTo: this.route&#125;)//'../' means go back one step in the path
+     </code>
+   </p>
+ </div>
+ <hr>
+ <div>
+   <h2>
+     Child Routes
+   </h2>
+   <p>Some routes may only be viewed from within other routes. For demonstration purposes two new components/views were created: department-overview and department-contact.</p>
+   <p>In order to achieve this functionality, we've modified the code in the app-routing.module.ts file for the 'department-detail' route:</p>
+   <br><code>
+      &#123;path:'department-detail/:id',
+      <br>component: DepartmentDetailComponent,
+      <br>children: [
+      <br>  &#123;path: 'overview', component: DepartmentOverviewComponent&#125;,
+      <br>  &#123;path: 'contact', component: DepartmentContactComponent&#125;
+      <br>]&#125;
+   </code>
+   <p>At this point, all it takes is the 'router-outlet' tag for a user to navigate by editting the URL, but we'll include buttons for simplicity.</p>
+   <br><p>Here's the code that the buttons would call:
+     <br><code>
+        showOverview()&#123;
+        <br>  this.router.navigate(['overview'], &#123;relativeTo: this.route&#125;);
+        <br>&#125;
+        <br>
+        <br>showContact()&#123;
+        <br>  this.router.navigate(['contact'], &#123;relativeTo: this.route&#125;;
+        <br>&#125;
+     </code>
+   </p>
+   
+   <b>Check it out:</b>
+   <br>
+   <nav>
+     <a routerLink="/department-list" routerLinkActive="active">Department-list </a>
+     <a routerLink="/department-detail" routerLinkActive="active">Department-detail </a>
+   </nav>
+   <p>If necessary you can add your default child route or include the wildcard route to handle invalid URLs.</p>
+  </div>
+  <hr>
+  <nav>
+    <a routerLink="/forms" routerLinkActive="active">Forms</a>
+  </nav>

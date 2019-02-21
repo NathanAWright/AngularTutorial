@@ -1,0 +1,20 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div style="text-align:center">
+  <h1>
+    Welcome to {{ title }}!
+  </h1>
+<!-- <app-test (childEvent)="message=$event" [parentData]="name"></app-test> -->
+<!-- <p>{{message}}//shows after button was pressed.
+  <br>
+This line prints from the parent component, it will be displayed after the child component (test) rendered before it.</p> -->
+<!-- <hr> -->
+<nav>
+  <a routerLink="/test" routerLinkActive="active">Test </a>
+  <a routerLink="/section2" routerLinkActive="active">Section2 </a> 
+  <a routerLink="/department-list" routerLinkActive="active">Department-list </a>
+  <a routerLink="/department-detail" routerLinkActive="active">Department-detail </a>
+  <a routerLink="/forms" routerLinkActive="active">Forms</a>
+</nav>
+<router-outlet></router-outlet>
+<hr>
+<b>View the commented out code in the app.component.html file to better understand the use of $events and message passing.</b>

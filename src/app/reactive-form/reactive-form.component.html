@@ -1,0 +1,300 @@
+<h1>Example Reactive Form</h1>
+<h2>Registration Form</h2>
+<p>NB. "form-group" and "form-control" (from bootstrap classes) are the building blocks of a reactive form.
+  <br>Template Driven Forms use them because essentially angular is performing these additional tasks behind the scenes.
+</p>
+{{registrationForm.value | json}}
+<form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label>Username</label>
+    <input [class.is-invalid]="registrationForm.get('userName').invalid && 
+                                registrationForm.get('userName').touched" formControlName = "userName" type="text" class="form-control">
+    <!-- <small class="text-danger" [class.d-none]="registrationForm.get('userName').valid || 
+                                                registrationForm.get('userName').untouched">Username is required.</small> -->
+    <div *ngIf="registrationForm.get('userName').invalid && 
+      registrationForm.get('userName').touched">
+      <small *ngIf = "registrationForm.get('userName').errors?.required" class="text-danger">Username is required.</small>
+      <small *ngIf = "registrationForm.get('userName').errors?.minlength" class="text-danger">Username must be at least 3 characters long</small>
+      <small *ngIf = "registrationForm.get('userName').errors?.forbiddenName" class="text-danger">{{userName.errors?.forbiddenName.value}} username not allowed.</small>
+    </div><!--The ? is the safe navigation operator, this is a safety check in case 'null' gets returned.-->
+  </div>
+
+  <div class="form-group">
+    <label>Email</label>
+    <button type="button" class="btn btn-secondary btn-sm m-2" (click)="addAlternateEmail()">Add Email</button>
+    <input [class.is-invalid]="email.invalid && email.touched" formControlName = "email" type="text" class="form-control">
+    <small class="text-danger" [class.d-none]="email.valid || email.untouched">Email is required.</small>
+    <div formArrayName = "alternateEmails" *ngFor="let email of alternateEmails.controls; let i = index">
+      <input type="text" class="form-control my-1" [formControlName]="i">
+    </div>
+  </div>
+
+
+  <div class="form-check mb-3">
+    <input formControlName = "subscribe" type="checkbox" class="form-check-input">
+    <label class="form-check-label">Send me promotional offers</label>
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input formControlName = "password" type="password" class="form-control">
+  </div>
+  <div class="form-group">
+    <label>Confirm Password</label>
+    <input [class.is-invalid] = "registrationForm.errors?.misMatch" formControlName = "confirmPassword" type="password" class="form-control">
+    <small class = "text-danger" *ngIf = "registrationForm.errors?.misMatch">Passwords do not match.</small>
+  </div>
+  <div formGroupName="address">
+    <div class="form-group">
+      <label>City</label>
+      <input formControlName = "city" type="text" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>State</label>
+      <input formControlName = "state" type="text" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Postal Code</label>
+      <input formControlName = "postalCode" type="text" class="form-control">
+    </div>
+  </div>
+
+  <button [disabled]="!registrationForm.valid" class="btn btn-primary" type="submit">Register</button>
+  <button (click)="loadApiData()" class="btn btn-secondary ml-2" type = "button">Load API Data</button>
+</form>
+<h3>The Reactive Forms Module</h3>
+<p>Import ReactiveFormsModule in app.module.ts and include it in the imports array. 
+  This gives us access to different classes and directives that are necessary to build reactive forms.
+  <br>Each component of a form will use the class "form-control", while each the entire form (or multiple components) uses "form-group".
+</p>
+<h3>The Form Group Instance</h3>
+<p>
+  We need to create an instance of a new form group, here's the code to do it:
+</p>
+<code>
+  registrationForm = new FormGroup(&#123;
+  <br>userName: new FormControl('Joey'),//since we passed this string, this will be the default value
+  <br>password: new FormControl(''),
+  <br>confirmPassword: new FormControl('')
+  <br>&#125;); //will represent the reactive form
+</code>
+<br>
+<p>Now we need to bind the form as well as give each component of the form the corresponding name to that used 
+  above. Here's a snippet:</p>
+<code>
+  &lt;form [formGroup]="registrationForm"&gt;
+</code>
+<br>and<br>
+<code>
+  &lt;input formControlName = "userName" &hellip;
+</code>
+<p>
+  For the address group within the form-group we needed to modify the code:
+</p>
+<code>
+  &lt;div formGroupName="address"&gt;
+</code>
+<p>Here's what we changed in the .ts file, now you can see why we made the modification above:</p>
+<code>
+    &hellip;
+  <br>confirmPassword: new FormControl(''),
+  <br><b>address: new FormGroup(&#123;
+    <br>city: new FormControl(''),
+    <br>state: new FormControl(''),
+    <br>postalCode: new FormControl('')
+    <br>&#125;)</b>
+    <br>&#125;);
+</code>
+<h3>Loading Service/API Data into a Form</h3>
+<p>The formGroup instance, "registrationForm" has a "<b>setValue()</b>" method which takes an object in the same format that the 
+  instance was made in order to assign default values to each field. Here's the code:
+</p>
+<code>
+    loadApiData()&#123;
+      <br>this.registrationForm.setValue(&#123;
+        <br>userName: 'Jon',
+        <br>password: '1234',
+        <br>confirmPassword: '1234',
+        <br>address: &#123;
+          <br>city: 'City',
+          <br>state: 'State',
+          <br>postalCode: '123456'
+          <br>&#125;
+      <br>&#125;);
+    <br>&#125;
+</code>
+<p>This code is executed when the "Load API Data" button is pressed.</p>
+<p>If however you want to load only some data fields, then you can use the "<b>patchValue()</b>" method instead since "setValue()" 
+  requires all of the fields to exist. Here's an example:
+</p>
+<code>
+  loadApiData()&#123;
+    <br>this.registrationForm.patchValue(&#123;
+      <br>userName: 'Jon',
+      <br>password: '1234',
+      <br>confirmPassword: '1234'
+    <br>&#125;);
+  <br>&#125;
+</code>
+<h3>The FormBuilder</h3>
+<p>Here's a more efficient alternative for completing the same task, it uses less code than the "FormGroup" implementation:</p>
+<code>
+  constructor(private fb: FormBuilder) &#123; &#125;<br>
+  <br>registrationForm = this.fb.group(&#123;
+  <br>userName: ['Joey'],
+  <br>password: [''],
+  <br>confirmPassword: [''],
+  <br>address: this.fb.group(&#123;
+  <br>city: [''],
+  <br>state: [''],
+  <br>postalCode: ['']
+  <br>&#125;)
+  <br>&#125;);
+</code>
+<p>"FormBuilder" needs to be imported, of course. The code was left commented out for your use.</p>
+<h3>Reactive Form Validation</h3>
+<p>
+  The second parameter of the array, or in this case, the parentheses, is editted:
+  <code>
+    <br>userName: new FormControl('Joey', Validators.required),<br>
+  </code>
+  "Validators" was imported and the "required" field is used for checking validity (validity and visual feedback is done in a similar fashion to template driven forms).
+  <br>Here's an example of a validity check:
+  <code>
+    <br>&lt;div class="form-group"&gt;
+    <br>&lt;label&gt;Username&lt;/label&gt;
+    <br>&lt;input <b>[class.is-invalid]="registrationForm.get('userName').invalid && 
+    <br>                               registrationForm.get('userName').touched"</b> formControlName = "userName" type="text" class="form-control"&gt;
+    <br>&lt;/div&gt;
+  </code>
+</p>
+<h4>Multiple Form Validation</h4>
+<p>Here's how we include more than one criteria for a field:</p>
+<code>
+  userName: new FormControl('Joey', [Validators.required, Validators.minLength(3)]),//notice that the Validators are now in an array format
+</code>
+<p>Of course, the error messages would be modified to suit whether the string is too short or is simply none existent.</p>
+<u><p>NB. You can create a getter to simplify the code, in each instance where the 'userName' is called, you can simply create a getter to minimise the code.</p></u>
+<h3>Custom Form Validation</h3>
+<p>In some cases, the built-in validator may not be suitable enough to identify invalid data entries. 
+  The custom validator that would be needed is a simple function, however, since a validator is something that is 
+  often used around a program, we will export it from another file that we made.
+</p>
+<h3>Cross Field Validation</h3>
+<p>An example of cross field validation would be confirming that the "password" field matches the "confirmPassword" field. 
+  Like the previous step, we've created a new file for this validation.
+  <br>The function would accept a control and return an object or null based on a validation pass or fail.
+  <br>In this case, the "control" that is passed to the function refers to the corresponding form group, rather than an individual form control.
+  <br>After importing AbstractControl, here's the code used to implement cross validation:
+</p>
+<code>
+  export function PasswordValidator(control: AbstractControl): &#123; [key: string]: boolean&#125; | null &#123;
+    <br>const password = control.get('password');//retrieving control values.
+    <br>const confirmPassword = control.get('confirmPassword');
+    <br>if (password.pristine || confirmPassword.pristine)//just making sure that there was actually an entry before we say they don't match
+    <br>return null;
+    <br>return password && confirmPassword && password.value != confirmPassword.value ?
+    <br>&#123;'misMatch': true&#125; : null;//return either the object 'misMatch' with a value "true" or "null" for a match.
+    <br>&#125;
+</code>
+<p>This implementation does not work unless the "FormBuilder" is used in creating the form. (So remember to check that the code isn't comented out.)
+  <br>At the end of the FormBuilder instance, we now add the newly created validator, a second parameter:
+</p>
+<code>
+  constructor(private fb: FormBuilder) &#123; &#125;
+  <br>registrationForm = this.fb.group(&#123;
+  <br>userName: ['Joey', Validators.required],
+  <br>&hellip;
+  <br>&#125;)
+  <br>&#125;<b>, &#123;validator: PasswordValidator&#125;</b>);
+</code>
+<p>This is inserted as a second parameter because it is relevant to the entire form group (recall that we passed the form-group into the validator, and not an individual control).</p>
+<h3>Conditional Validation</h3>
+<p>In certain situations, validation checks would be required while in others it won't.
+  <br>Here's an example: if a user wants to subscribe, then their email address becomes necessary &hellip;well obviously.
+</p>
+<p>We can use the "valueChanges" property of the check box to determine whether it has been selected or not:</p>
+<code>
+    this.registrationForm.get('subscribe').<b>valueChanges</b>.subscribe( checkedValue =>&#123;
+    <br>const email = this.registrationForm.get('email');
+      <br>if (checkedValue)&#123;
+      <br>email.<b>setValidators(Validators.required)</b>; 
+        <br>&#125;else&#123;
+      <br>email.<b>clearValidators()</b>;
+        <br>&#125;
+      <br>email.<b>updateValueAndValidity()</b>;//verifies the update to the new status
+      <br>&#125;)
+</code>
+<p>Again, here's how we set up the html validation (we used a getter for the email form control this time): </p>
+<code>
+  &lt;div class="form-group"&gt;
+      <br>&lt;label&gt;Email&lt;/label&gt;
+      <br>&lt;input [class.is-invalid]="email.invalid && email.touched" formControlName = "email" type="text" class="form-control"&gt;
+      <br>&lt;small class="text-danger" [class.d-none]="email.valid || email.untouched"&gt;Email is required.&lt;/small&gt;
+      <br>&lt;/div&gt;
+</code>
+<h3>Dynamic Form Controls</h3>
+<p>This type of form control allows for mulitple hidden fields. In the event that a user makes a certain decision, one or more additional fields may appear on the form.
+  <br>Here are the steps:
+</p>
+<ol>
+  <li>
+    Import "FormArray".
+  </li>
+  <li>
+    Define the FormArray.
+  </li>
+  <li>
+    Create a "getter()".
+  </li>
+  <li>
+    Create a method to push either a form array or a form group.
+  </li>
+  <li>
+    Add the "formArrayName" directive
+  </li>
+  <li>
+    Iterate using the "*ngFor" structural directive.
+  </li>
+</ol>
+<p>In our example, we're adding multiple emails to a form, so here we've added the "alternateEmails" 
+  array to the FormBuilder form group which we previously defined:
+</p>
+<code>
+  this.registrationForm = this.fb.group(&#123;
+    <br>userName: ['Joey', Validators.required],
+    <br>email: [''],
+    <br>&hellip;,
+    <br><b>alternateEmails: this.fb.array([])</b> //can be initialised with any number of controls.
+  <br>&#125;, &#123;validator: PasswordValidator&#125;);
+</code>
+<p><b>Remember to import "FormArray".</b></p>
+<h3>Submitting Form Data to a Server</h3>
+<p>
+  Just as with TD Forms, we bind to the onSubmit attribute in the outer form tag in order to take action once the user clicks submit.
+  <br>Just as before, we will be using a service to save the data. (Of course this means injecting the httpClient module into the service's 
+  constructor and including it in the imports array of app.module.ts)
+</p>
+<ol>
+  <li>Initialise a url string in the service file.</li>
+  <li>Create a method which makes the post request (we used "register(userData)") in the service file.</li>
+  <li>In the "onSubmit()" method, the method above is called, the data will be saved and an observable is returned.</li>
+</ol>
+<p>Here's the code for the "register(userData)" method:</p>
+<code>
+    register(userData)&#123;
+      <br>this._http.post&lt;any&gt;(this._url, userData); //returns the response as an observable which would be used in the reactive-form.component.ts file
+    <br>&#125;
+</code>
+<p>Here's the code for the "onSubmit()" method which calls it:</p>
+<code>
+  onSubmit()&#123;
+    <br>console.log(this.registrationForm.value)
+    <br>this._registrationService.register(this.registrationForm.value).subscribe(
+      <br>response => console.log('Success!'),
+      <br>error => console.error('Error!', error)
+    <br>);
+  <br>&#125;
+</code>
+<p><b>NB. The command for running the server is "node server" (execute inside of the server folder).</b></p>
+<hr>
